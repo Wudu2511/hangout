@@ -5,9 +5,9 @@ import streamlit as st
 # =========================================================
 
 DATES = [
-    "Thứ 7 - [bổ sung ngày]",
-    "Chủ nhật - [bổ sung ngày]",
-    "[Bổ sung ngày khác]",
+    "Thứ 5 - 10/9",
+    "Thứ 6 - 11/9",
+    "Thứ 7 - 12/9",
 ]
 
 TIME_SLOTS = [
