@@ -380,7 +380,7 @@ elif st.session_state.page == 3:
     st.session_state.food_choice = food_choice
 
     if not food_choice:
-        st.caption("Chọn một option nha — từ chối đi ăn cũng được 🥹")
+        st.caption("Chọn một option nha")
 
     navigation(
         can_continue=bool(food_choice),
@@ -396,7 +396,7 @@ elif st.session_state.page == 4:
             <div class="tiny-label">✨ Kèo đã lên</div>
             <div class="hero-title">Rất mong chờ chuyến đi chơi!</div>
             <div class="hero-subtitle">
-                Cảm ơn bạn đã chịu khó chọn hết nè 💗
+                Hủy kèo thì báo nha mắ ! 💗
             </div>
             <div class="small-note">
                 Hẹn gặp bạn ở một ngày thật vui nhé!
@@ -436,7 +436,7 @@ elif st.session_state.page == 4:
                 st.rerun()
 
     else:
-        st.success("Đã chốt kèo! Hẹn nhau hôm đó nhaaa 🫶")
+        st.success("Đã chốt kèo! Hẹn nhau hôm đó nhaaa 👌👉👈")
 
         if not st.session_state.celebrated:
             st.balloons()
