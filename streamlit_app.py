@@ -1,5 +1,10 @@
 import streamlit as st
+import gspread
+import uuid
 
+from datetime import datetime
+from zoneinfo import ZoneInfo
+from google.oauth2.service_account import Credentials
 # =========================================================
 # 1) CẤU HÌNH - CHỈ CẦN SỬA PHẦN NÀY
 # =========================================================
@@ -207,6 +212,8 @@ DEFAULTS = {
     "food_choice": None,
     "confirmed": False,
     "celebrated": False,
+    "saved_to_sheet": False,
+    "response_id": None,
 }
 
 for key, value in DEFAULTS.items():
@@ -240,7 +247,42 @@ def navigation(can_continue=True, next_label="Tiếp tục →"):
             disabled=not can_continue,
         ):
             next_page()
+def save_response_to_google_sheet():
+    scopes = [
+        "https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/drive",
+    ]
 
+    credentials = Credentials.from_service_account_info(
+        dict(st.secrets["gcp_service_account"]),
+        scopes=scopes,
+    )
+
+    client = gspread.authorize(credentials)
+
+    spreadsheet = client.open_by_url(st.secrets["sheet_url"])
+
+    worksheet = spreadsheet.worksheet("Responses")
+
+    submitted_at = datetime.now(
+        ZoneInfo("Asia/Ho_Chi_Minh")
+    ).strftime("%d/%m/%Y %H:%M:%S")
+
+    response_id = uuid.uuid4().hex[:8]
+
+    worksheet.append_row(
+        [
+            submitted_at,
+            response_id,
+            st.session_state.date_choice,
+            st.session_state.time_choice,
+            st.session_state.game_choice,
+            st.session_state.food_choice,
+        ],
+        value_input_option="USER_ENTERED",
+    )
+
+    return response_id
 
 # =========================================================
 # 5) THANH TIẾN TRÌNH
@@ -428,12 +470,26 @@ elif st.session_state.page == 4:
 
         with col2:
             if st.button(
-                "Chốt kèo này! 💖",
-                type="primary",
-                use_container_width=True,
-            ):
-                st.session_state.confirmed = True
-                st.rerun()
+    "Chốt kèo này! 💖",
+    type="primary",
+    use_container_width=True,
+):
+    try:
+        if not st.session_state.saved_to_sheet:
+
+            response_id = save_response_to_google_sheet()
+
+            st.session_state.response_id = response_id
+            st.session_state.saved_to_sheet = True
+
+        st.session_state.confirmed = True
+        st.rerun()
+
+    except Exception as e:
+        st.error(
+            "🥹 Chưa lưu được lựa chọn. "
+            "Kiểm tra lại kết nối Google Sheet nha!"
+        )
 
     else:
         st.success("Đã chốt kèo! Hẹn nhau hôm đó nhaaa 👌👉👈")
