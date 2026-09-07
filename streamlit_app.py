@@ -469,27 +469,27 @@ elif st.session_state.page == 4:
                 st.rerun()
 
         with col2:
-    if st.button(
-        "Chốt kèo này! 💖",
-        type="primary",
-        use_container_width=True,
-    ):
-        try:
-            if not st.session_state.saved_to_sheet:
+            if st.button(
+                "Chốt kèo này! 💖",
+                type="primary",
+                use_container_width=True,
+            ):
+            try:
+                if not st.session_state.saved_to_sheet:
 
-                response_id = save_response_to_google_sheet()
+                    response_id = save_response_to_google_sheet()
 
-                st.session_state.response_id = response_id
-                st.session_state.saved_to_sheet = True
+                    st.session_state.response_id = response_id
+                    st.session_state.saved_to_sheet = True
 
-            st.session_state.confirmed = True
-            st.rerun()
+                st.session_state.confirmed = True
+                st.rerun()
 
-        except Exception as e:
-            st.error(
-                "🥹 Chưa lưu được lựa chọn. "
-                "Kiểm tra lại kết nối Google Sheet nha!"
-            )
+            except Exception as e:
+                st.error(
+                    "🥹 Chưa lưu được lựa chọn. "
+                    "Kiểm tra lại kết nối Google Sheet nha!"
+                )
     else:
         st.success("Đã chốt kèo! Hẹn nhau hôm đó nhaaa 👌👉👈")
 
