@@ -1,0 +1,451 @@
+import streamlit as st
+
+# =========================================================
+# 1) CẤU HÌNH - CHỈ CẦN SỬA PHẦN NÀY
+# =========================================================
+
+DATES = [
+    "Thứ 7 - [bổ sung ngày]",
+    "Chủ nhật - [bổ sung ngày]",
+    "[Bổ sung ngày khác]",
+]
+
+TIME_SLOTS = [
+    "09:00 - 11:00",
+    "14:00 - 16:00",
+    "18:00 - 20:00",
+]
+
+GAMES = [
+    "🎵 Music Box",
+    "🎮 Nintendo",
+    "💃 Box Dance",
+    "🤸 Jump Arena / Patin",
+]
+
+FOODS = [
+    "🎲 Tạt đại một quán",
+    "🇰🇷 Đồ Hàn",
+    "🍜 Ramen",
+    "🍗 Gà rán",
+    "🥢 Bún",
+    "🙅 Không đi ăn nha",
+]
+
+
+# =========================================================
+# 2) CẤU HÌNH TRANG
+# =========================================================
+
+st.set_page_config(
+    page_title="Đi chơi cùng chúng tớ nhé 💌",
+    page_icon="💌",
+    layout="centered",
+    initial_sidebar_state="collapsed",
+)
+
+
+# =========================================================
+# 3) CSS - GIAO DIỆN
+# =========================================================
+
+st.markdown(
+    """
+    <style>
+        /* Ẩn bớt thành phần mặc định */
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+        header {visibility: hidden;}
+
+        .stApp {
+            background:
+                radial-gradient(circle at 10% 20%, rgba(255, 218, 235, 0.75) 0%, transparent 28%),
+                radial-gradient(circle at 90% 10%, rgba(221, 235, 255, 0.85) 0%, transparent 30%),
+                radial-gradient(circle at 85% 90%, rgba(255, 239, 194, 0.65) 0%, transparent 28%),
+                #fffafc;
+        }
+
+        .block-container {
+            max-width: 760px;
+            padding-top: 3.5rem;
+            padding-bottom: 4rem;
+        }
+
+        .invite-card {
+            background: rgba(255, 255, 255, 0.90);
+            border: 1px solid rgba(255, 182, 210, 0.55);
+            border-radius: 28px;
+            padding: 34px 28px;
+            box-shadow: 0 14px 45px rgba(111, 71, 91, 0.12);
+            text-align: center;
+            margin-bottom: 22px;
+        }
+
+        .tiny-label {
+            display: inline-block;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #c15b83;
+            background: #fff0f6;
+            padding: 7px 12px;
+            border-radius: 999px;
+            margin-bottom: 14px;
+        }
+
+        .hero-title {
+            font-size: clamp(2rem, 7vw, 3.7rem);
+            line-height: 1.05;
+            font-weight: 900;
+            color: #49323d;
+            margin: 4px 0 14px 0;
+        }
+
+        .hero-subtitle {
+            font-size: 1.15rem;
+            color: #715764;
+            margin: 0;
+        }
+
+        .small-note {
+            font-size: 0.90rem;
+            color: #a07f8e;
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 850;
+            color: #49323d;
+            text-align: center;
+            margin-bottom: 4px;
+        }
+
+        .page-desc {
+            text-align: center;
+            color: #8a6f7c;
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 1.03rem;
+            font-weight: 750;
+            color: #5f4551;
+            margin-top: 12px;
+            margin-bottom: 4px;
+        }
+
+        .summary-box {
+            background: #fff;
+            border: 1px solid #f4cadb;
+            border-radius: 22px;
+            padding: 20px 22px;
+            margin: 16px 0;
+            box-shadow: 0 8px 26px rgba(111, 71, 91, 0.08);
+        }
+
+        .summary-row {
+            padding: 7px 0;
+            color: #5f4551;
+            font-size: 1rem;
+        }
+
+        div[data-testid="stButton"] > button {
+            border-radius: 999px;
+            min-height: 48px;
+            font-weight: 750;
+            border: 1px solid #e7a8c1;
+        }
+
+        div[data-testid="stButton"] > button[kind="primary"] {
+            background: linear-gradient(135deg, #ef7ca8, #d95d90);
+            color: white;
+            border: none;
+            box-shadow: 0 7px 18px rgba(217, 93, 144, 0.24);
+        }
+
+        div[data-testid="stPills"] button {
+            border-radius: 999px !important;
+        }
+
+        .progress-label {
+            text-align: center;
+            font-size: 0.83rem;
+            color: #a07f8e;
+            margin-bottom: 5px;
+        }
+
+        @media (max-width: 600px) {
+            .block-container {
+                padding-top: 1.5rem;
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            .invite-card {
+                padding: 28px 18px;
+                border-radius: 24px;
+            }
+        }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+
+# =========================================================
+# 4) SESSION STATE
+# =========================================================
+
+DEFAULTS = {
+    "page": 0,
+    "date_choice": None,
+    "time_choice": None,
+    "game_choice": None,
+    "food_choice": None,
+    "confirmed": False,
+    "celebrated": False,
+}
+
+for key, value in DEFAULTS.items():
+    if key not in st.session_state:
+        st.session_state[key] = value
+
+
+def next_page():
+    st.session_state.page = min(st.session_state.page + 1, 4)
+    st.rerun()
+
+
+def prev_page():
+    st.session_state.page = max(st.session_state.page - 1, 0)
+    st.rerun()
+
+
+def navigation(can_continue=True, next_label="Tiếp tục →"):
+    left, right = st.columns(2)
+
+    with left:
+        if st.session_state.page > 0:
+            if st.button("← Quay lại", use_container_width=True):
+                prev_page()
+
+    with right:
+        if st.button(
+            next_label,
+            type="primary",
+            use_container_width=True,
+            disabled=not can_continue,
+        ):
+            next_page()
+
+
+# =========================================================
+# 5) THANH TIẾN TRÌNH
+# =========================================================
+
+if st.session_state.page > 0:
+    st.markdown(
+        f'<div class="progress-label">Bước {st.session_state.page} / 4</div>',
+        unsafe_allow_html=True,
+    )
+    st.progress(st.session_state.page / 4)
+
+
+# =========================================================
+# 6) CÁC TRANG
+# =========================================================
+
+# ---------- Trang 1: Lời mời ----------
+if st.session_state.page == 0:
+    st.markdown(
+        """
+        <div class="invite-card">
+            <div class="tiny-label">💌 Một lời mời nho nhỏ</div>
+            <div class="hero-title">Chào bạn thân yêu!</div>
+            <div class="hero-subtitle">
+                Đi chơi cùng chúng tớ nhé? 🥺💗
+            </div>
+            <div class="small-note">
+                nếu bạn rảnh :))
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.write("")
+    if st.button(
+        "Okii, xem kèo gì nào ✨",
+        type="primary",
+        use_container_width=True,
+    ):
+        next_page()
+
+
+# ---------- Trang 2: Chọn ngày & thời gian ----------
+elif st.session_state.page == 1:
+    st.markdown(
+        """
+        <div class="page-title">📅 Bạn rảnh hôm nào?</div>
+        <div class="page-desc">
+            Chọn giúp chúng tớ <b>1 ngày</b> và <b>1 khung giờ</b> nha.
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown('<div class="section-title">Ngày đi chơi</div>', unsafe_allow_html=True)
+
+    date_choice = st.pills(
+        "Chọn ngày",
+        DATES,
+        selection_mode="single",
+        default=st.session_state.date_choice,
+        key="date_widget",
+        label_visibility="collapsed",
+    )
+    st.session_state.date_choice = date_choice
+
+    st.markdown('<div class="section-title">Khung giờ bạn rảnh</div>', unsafe_allow_html=True)
+
+    time_choice = st.pills(
+        "Chọn thời gian",
+        TIME_SLOTS,
+        selection_mode="single",
+        default=st.session_state.time_choice,
+        key="time_widget",
+        label_visibility="collapsed",
+    )
+    st.session_state.time_choice = time_choice
+
+    can_continue = bool(date_choice and time_choice)
+
+    if not can_continue:
+        st.caption("Chọn đủ ngày và giờ rồi mình đi tiếp nha 👀")
+
+    navigation(can_continue=can_continue)
+
+
+# ---------- Trang 3: Chọn trò chơi ----------
+elif st.session_state.page == 2:
+    st.markdown(
+        """
+        <div class="page-title">🎮 Chơi gì đây ta?</div>
+        <div class="page-desc">
+            Chỉ được pick <b>1 trò</b> thôi nhé — lựa chọn khó khăn bắt đầu rồi đó :))
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    game_choice = st.pills(
+        "Chọn trò chơi",
+        GAMES,
+        selection_mode="single",
+        default=st.session_state.game_choice,
+        key="game_widget",
+        label_visibility="collapsed",
+    )
+    st.session_state.game_choice = game_choice
+
+    if not game_choice:
+        st.caption("Pick một trò bạn muốn chơi nhất nha ✨")
+
+    navigation(can_continue=bool(game_choice))
+
+
+# ---------- Trang 4: Chọn đồ ăn ----------
+elif st.session_state.page == 3:
+    st.markdown(
+        """
+        <div class="page-title">🍜 Chơi xong đi ăn hong?</div>
+        <div class="page-desc">
+            Kèo ăn là phần rất quan trọng của chuyến đi này 😌
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    food_choice = st.pills(
+        "Chọn món ăn",
+        FOODS,
+        selection_mode="single",
+        default=st.session_state.food_choice,
+        key="food_widget",
+        label_visibility="collapsed",
+    )
+    st.session_state.food_choice = food_choice
+
+    if not food_choice:
+        st.caption("Chọn một option nha — từ chối đi ăn cũng được 🥹")
+
+    navigation(
+        can_continue=bool(food_choice),
+        next_label="Xem lại kèo →",
+    )
+
+
+# ---------- Trang 5: Kết ----------
+elif st.session_state.page == 4:
+    st.markdown(
+        """
+        <div class="invite-card">
+            <div class="tiny-label">✨ Kèo đã lên</div>
+            <div class="hero-title">Rất mong chờ chuyến đi chơi!</div>
+            <div class="hero-subtitle">
+                Cảm ơn bạn đã chịu khó chọn hết nè 💗
+            </div>
+            <div class="small-note">
+                Hẹn gặp bạn ở một ngày thật vui nhé!
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        f"""
+        <div class="summary-box">
+            <div class="summary-row">📅 <b>Ngày:</b> {st.session_state.date_choice}</div>
+            <div class="summary-row">⏰ <b>Thời gian:</b> {st.session_state.time_choice}</div>
+            <div class="summary-row">🎮 <b>Trò chơi:</b> {st.session_state.game_choice}</div>
+            <div class="summary-row">🍜 <b>Ăn uống:</b> {st.session_state.food_choice}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    if not st.session_state.confirmed:
+        col1, col2 = st.columns([1, 1.45])
+
+        with col1:
+            if st.button("← Sửa lựa chọn", use_container_width=True):
+                st.session_state.page = 1
+                st.rerun()
+
+        with col2:
+            if st.button(
+                "Chốt kèo này! 💖",
+                type="primary",
+                use_container_width=True,
+            ):
+                st.session_state.confirmed = True
+                st.rerun()
+
+    else:
+        st.success("Đã chốt kèo! Hẹn nhau hôm đó nhaaa 🫶")
+
+        if not st.session_state.celebrated:
+            st.balloons()
+            st.session_state.celebrated = True
+
+        if st.button("Chọn lại từ đầu ↻", use_container_width=True):
+            for key, value in DEFAULTS.items():
+                st.session_state[key] = value
+            # Xóa state của widget để tránh giữ lựa chọn cũ
+            for key in ["date_widget", "time_widget", "game_widget", "food_widget"]:
+                st.session_state.pop(key, None)
+            st.rerun()
